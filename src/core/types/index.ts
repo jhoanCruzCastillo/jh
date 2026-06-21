@@ -38,14 +38,25 @@ export interface Taller {
   stBg: string
 }
 
-export interface Project {
+export interface ProjectDocument {
   id: string
   name: string
   type: string
   status: ProjectStatus
   progress: number
   date: string
+}
+
+export interface Project {
+  id: string
+  name: string
+  location: string
+  sector: string
+  cui: string
   icon: string
+  status: ProjectStatus
+  date: string
+  documents: ProjectDocument[]
 }
 
 export interface FieldDef {
@@ -128,10 +139,28 @@ export interface CourseDef {
 }
 
 export interface CourseModule {
+  id: string
   title: string
-  type: 'video' | 'live' | 'exercise' | 'exam'
-  duration: string
+  sessions: ModuleSession[]
+}
+
+export interface ModuleSession {
+  id: string
+  title: string
+  docente: string
+  classes: SessionContent[]
+  readings: SessionReading[]
+}
+
+export interface SessionContent {
+  title: string
+  type: 'video' | 'live' | 'taller' | 'examen'
   completed: boolean
+}
+
+export interface SessionReading {
+  title: string
+  file: string
 }
 
 export interface CertificateDef {

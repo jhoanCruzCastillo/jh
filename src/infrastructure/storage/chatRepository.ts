@@ -6,7 +6,7 @@ const KEY = 'chat_messages'
 const WELCOME: ChatMessage = {
   id: 'welcome',
   from: 'bot',
-  text: 'Hola Perla 👋 Soy tu mentor de inversión pública. Estoy aquí 24/7 para enseñarte y acompañarte en cada sección de tu documentación técnica. ¿En qué te ayudo hoy?',
+  text: 'Hola Camila 👋 Soy tu mentor de inversión pública. Estoy aquí 24/7 para enseñarte y acompañarte en cada sección de tu documentación técnica. ¿En qué te ayudo hoy?',
   timestamp: Date.now(),
 }
 

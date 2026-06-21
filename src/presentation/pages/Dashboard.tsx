@@ -3,6 +3,7 @@ import { TALLERES, QUICK_PROMPTS, INSTRUCTOR_IMAGES } from '@/core/data/plans'
 import { KPICard } from '../components/KPICard'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
+import { MentorBot } from '../components/MentorBot'
 import type { KPI } from '@/core/types'
 
 const KPIS: KPI[] = [
@@ -28,7 +29,7 @@ export function Dashboard() {
         <div style={{ position: 'absolute', right: -30, top: -30, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,.06)' }} />
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ maxWidth: 620 }}>
-            <div style={{ fontSize: 13, color: '#bfe6d4', fontWeight: 600, marginBottom: 6 }}>Bienvenida de vuelta, Perla 👋</div>
+            <div style={{ fontSize: 13, color: '#bfe6d4', fontWeight: 600, marginBottom: 6 }}>Bienvenida de vuelta, Camila 👋</div>
             <div className="heading-font" style={{ fontWeight: 800, fontSize: 26, lineHeight: 1.18, marginBottom: 10 }}>
               No estás sola frente a un formato complejo.
             </div>
@@ -107,7 +108,7 @@ export function Dashboard() {
               background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fa-solid fa-robot" style={{ color: '#fff' }} />
+              <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={18} animation="blink" loop loopDelay={4000} /></span>
             </div>
             <div>
               <div className="heading-font" style={{ fontWeight: 700, fontSize: 15 }}>Tu mentor IA</div>

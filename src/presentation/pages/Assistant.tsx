@@ -3,6 +3,7 @@ import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { QUICK_PROMPTS } from '@/core/data/plans'
 import { generateResponse } from '@/infrastructure/ai/mentorAI'
 import { Reveal } from '../components/Reveal'
+import { MentorBot } from '../components/MentorBot'
 import type { ChatMessage } from '@/core/types'
 
 export function Assistant() {
@@ -66,7 +67,7 @@ export function Assistant() {
             background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <i className="fa-solid fa-robot" style={{ color: '#fff', fontSize: 18 }} />
+            <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={22} animation="wink" loop loopDelay={2500} /></span>
           </div>
           <div style={{ flex: 1 }}>
             <div className="heading-font" style={{ fontWeight: 700, fontSize: 16 }}>Mentor de Inversión Pública</div>
@@ -88,7 +89,7 @@ export function Assistant() {
                   background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end',
                 }}>
-                  <i className="fa-solid fa-robot" style={{ color: '#fff', fontSize: 13 }} />
+                  <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={14} animation="default" /></span>
                 </div>
               )}
               <div style={{
@@ -112,7 +113,7 @@ export function Assistant() {
                 background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <i className="fa-solid fa-robot" style={{ color: '#fff', fontSize: 13 }} />
+                <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={14} animation="default" /></span>
               </div>
               <div style={{
                 background: '#fff', border: '1px solid #e3e8eb',

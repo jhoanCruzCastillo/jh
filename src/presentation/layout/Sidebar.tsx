@@ -1,5 +1,6 @@
 import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { NAV_ITEMS, PERFILES } from '@/core/data/navigation'
+import { MentorBot } from '@/presentation/components/MentorBot'
 import type { ViewKey } from '@/core/types'
 
 export function Sidebar() {
@@ -52,13 +53,13 @@ export function Sidebar() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 16px 16px', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
           <img
             src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=108&h=108&fit=crop&q=80"
-            alt="Perla Ruiz"
+            alt="Camila Torres"
             style={{
               width: 54, height: 54, borderRadius: '50%', objectFit: 'cover',
               border: '2px solid rgba(255,255,255,.18)',
             }}
           />
-          <div style={{ marginTop: 9, fontWeight: 700, color: '#fff', fontSize: 14.5 }}>Perla Ruiz</div>
+          <div style={{ marginTop: 9, fontWeight: 700, color: '#fff', fontSize: 14.5 }}>Camila Torres</div>
           <div style={{ fontSize: 11.5, color: '#7fb9c7' }}>{perfilObj.long}</div>
         </div>
       )}
@@ -81,7 +82,13 @@ export function Sidebar() {
                 boxShadow: active ? 'inset 3px 0 0 #36ad46' : 'none',
               }}
             >
-              <i className={`fa-solid ${n.icon}`} style={{ fontSize: 16, width: 20, textAlign: 'center', color: active ? '#36ad46' : '#7fb9c7' }} />
+              {n.key === 'asistente' ? (
+                <span style={{ width: 20, display: 'flex', justifyContent: 'center', color: active ? '#36ad46' : '#7fb9c7' }}>
+                  <MentorBot size={18} animation="wink" loop loopDelay={5000} />
+                </span>
+              ) : (
+                <i className={`fa-solid ${n.icon}`} style={{ fontSize: 16, width: 20, textAlign: 'center', color: active ? '#36ad46' : '#7fb9c7' }} />
+              )}
               {!collapsed && <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{n.label}</span>}
             </button>
           )

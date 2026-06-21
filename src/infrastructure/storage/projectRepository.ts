@@ -6,7 +6,7 @@ const KEY = 'projects'
 
 export function loadProjects(): Project[] {
   const stored = getItem<Project[] | null>(KEY, null)
-  if (!stored) {
+  if (!stored || !stored[0]?.documents) {
     setItem(KEY, SEED_PROJECTS)
     return SEED_PROJECTS
   }
@@ -15,19 +15,4 @@ export function loadProjects(): Project[] {
 
 export function saveProjects(projects: Project[]): void {
   setItem(KEY, projects)
-}
-
-export function addProject(project: Project): Project[] {
-  const projects = loadProjects()
-  projects.unshift(project)
-  saveProjects(projects)
-  return projects
-}
-
-export function updateProject(id: string, patch: Partial<Project>): Project[] {
-  const projects = loadProjects().map(p =>
-    p.id === id ? { ...p, ...patch } : p
-  )
-  saveProjects(projects)
-  return projects
 }

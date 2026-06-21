@@ -2,6 +2,7 @@ import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { SECTIONS } from '@/core/data/sections'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
+import { MentorBot } from '../components/MentorBot'
 
 export function Workspace() {
   const { step, doneSteps } = useAppState()
@@ -178,7 +179,7 @@ export function Workspace() {
               width: 34, height: 34, borderRadius: 9,
               background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <i className="fa-solid fa-robot" style={{ color: '#fff' }} />
+              <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={18} animation="blink" loop loopDelay={3000} /></span>
             </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>Mentor IA</div>
