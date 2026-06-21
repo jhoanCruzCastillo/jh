@@ -1,4 +1,4 @@
-export type ViewKey = 'inicio' | 'proyectos' | 'workspace' | 'asistente' | 'formatos' | 'planes'
+export type ViewKey = 'inicio' | 'proyectos' | 'workspace' | 'asistente' | 'cursos' | 'formatos' | 'planes'
 
 export type PerfilKey = 'estudiante' | 'consultor' | 'organizacion'
 
@@ -109,4 +109,42 @@ export interface ChatMessage {
   from: 'user' | 'bot'
   text: string
   timestamp: number
+}
+
+export type CourseStatus = 'en_curso' | 'completado' | 'por_iniciar'
+
+export interface CourseDef {
+  id: string
+  title: string
+  instructor: string
+  instructorEmail: string
+  duration: string
+  status: CourseStatus
+  statusLabel: string
+  students: number
+  progress: number
+  image: string
+  modules: CourseModule[]
+}
+
+export interface CourseModule {
+  title: string
+  type: 'video' | 'live' | 'exercise' | 'exam'
+  duration: string
+  completed: boolean
+}
+
+export interface CertificateDef {
+  id: string
+  name: string
+  date: string
+  courseId: string
+}
+
+export interface DigitalBookDef {
+  id: string
+  title: string
+  author: string
+  format: string
+  activated: boolean
 }

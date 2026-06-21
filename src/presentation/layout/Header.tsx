@@ -1,5 +1,7 @@
 import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { PERFILES, VIEW_TITLES } from '@/core/data/navigation'
+import { SliderTabs } from '@/presentation/components/SliderTabs'
+import type { PerfilKey } from '@/core/types'
 
 export function Header() {
   const { view, perfil, collapsed } = useAppState()
@@ -40,34 +42,26 @@ export function Header() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         {/* Profile switcher */}
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,.10)', padding: 3, borderRadius: 10, gap: 2 }}>
-          {PERFILES.map(p => {
-            const active = perfil === p.key
-            return (
-              <button
-                key={p.key}
-                onClick={() => dispatch({ type: 'SET_PERFIL', payload: p.key })}
-                title={p.label}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 0, border: 'none',
-                  cursor: 'pointer', borderRadius: 8, padding: '7px 12px',
-                  fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
-                  background: active ? '#fff' : 'transparent',
-                  color: active ? '#0f5d78' : '#cfe6ee',
-                }}
-              >
-                <i className={`fa-solid ${p.icon}`} style={{ fontSize: 12 }} />
-                {!collapsed && <span style={{ marginLeft: 6 }}>{p.label}</span>}
-              </button>
-            )
-          })}
-        </div>
+        <SliderTabs
+          tabs={PERFILES.map(p => ({ key: p.key, label: collapsed ? '' : p.label, icon: p.icon }))}
+          active={perfil}
+          onSelect={key => dispatch({ type: 'SET_PERFIL', payload: key as PerfilKey })}
+          layoutId="perfil-tabs"
+          activeBg="#fff"
+          activeColor="#0f5d78"
+          inactiveColor="#cfe6ee"
+          fontSize={12.5}
+          padding="7px 12px"
+          containerBg="rgba(255,255,255,.10)"
+          containerBorder="none"
+        />
 
         {/* Notifications */}
         <button
           style={{
             position: 'relative', width: 40, height: 40, borderRadius: '50%',
             border: 'none', background: 'rgba(255,255,255,.10)', color: '#fff', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
           <i className="fa-regular fa-bell" />

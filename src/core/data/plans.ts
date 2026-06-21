@@ -57,6 +57,11 @@ export const TALLERES: Taller[] = [
   { day: '02', mon: 'jul', title: 'Costos y metas físicas en proyectos', time: '8:00 PM - 10:00 PM', docente: 'José Herrera Jara', status: 'POR REALIZAR', stColor: '#0f5d78', stBg: '#e3f1f5' },
 ]
 
+export const INSTRUCTOR_IMAGES: Record<string, string> = {
+  'José Herrera Jara': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80',
+  'Eduardo Rivas Warthon': 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&q=80',
+}
+
 export const QUICK_PROMPTS = [
   '¿Qué tipo de IOARR corresponde a mi proyecto?',
   '¿Cómo redacto el problema central?',

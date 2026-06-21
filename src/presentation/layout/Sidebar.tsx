@@ -50,16 +50,14 @@ export function Sidebar() {
       {/* Profile */}
       {!collapsed && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 16px 16px', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-          <div
+          <img
+            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=108&h=108&fit=crop&q=80"
+            alt="Perla Ruiz"
             style={{
-              width: 54, height: 54, borderRadius: '50%',
-              background: 'linear-gradient(140deg,#2b8aa6,#1a5f78)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 54, height: 54, borderRadius: '50%', objectFit: 'cover',
               border: '2px solid rgba(255,255,255,.18)',
             }}
-          >
-            <i className="fa-solid fa-user" style={{ color: '#cfe6ee', fontSize: 22 }} />
-          </div>
+          />
           <div style={{ marginTop: 9, fontWeight: 700, color: '#fff', fontSize: 14.5 }}>Perla Ruiz</div>
           <div style={{ fontSize: 11.5, color: '#7fb9c7' }}>{perfilObj.long}</div>
         </div>

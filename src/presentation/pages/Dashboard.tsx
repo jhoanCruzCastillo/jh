@@ -1,5 +1,5 @@
 import { useAppDispatch } from '@/app/AppContext'
-import { TALLERES, QUICK_PROMPTS } from '@/core/data/plans'
+import { TALLERES, QUICK_PROMPTS, INSTRUCTOR_IMAGES } from '@/core/data/plans'
 import { KPICard } from '../components/KPICard'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
@@ -21,7 +21,8 @@ export function Dashboard() {
       {/* Hero */}
       <Reveal style={{
         position: 'relative', overflow: 'hidden', borderRadius: 16,
-        background: 'linear-gradient(120deg,#0f5d78,#1a7fa0 55%,#2b9a6b)',
+        backgroundImage: 'linear-gradient(120deg, rgba(15,93,120,.88), rgba(26,127,160,.82) 55%, rgba(43,154,107,.8)), url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=400&fit=crop&q=80)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
         padding: '26px 28px', color: '#fff', boxShadow: '0 10px 24px rgba(15,93,120,.22)',
       }}>
         <div style={{ position: 'absolute', right: -30, top: -30, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,.06)' }} />
@@ -149,6 +150,9 @@ export function Dashboard() {
               <div className="heading-font" style={{ fontWeight: 800, fontSize: 20, color: '#16708f', lineHeight: 1 }}>{t.day}</div>
               <div style={{ fontSize: 11, color: '#9aa7ad', textTransform: 'uppercase' }}>{t.mon}</div>
             </div>
+            {INSTRUCTOR_IMAGES[t.docente] && (
+              <img src={INSTRUCTOR_IMAGES[t.docente]} alt={t.docente} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flex: 'none' }} />
+            )}
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 14, color: '#1f2d33' }}>{t.title}</div>
               <div style={{ fontSize: 12, color: '#6c7b83' }}>

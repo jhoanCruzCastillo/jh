@@ -2,6 +2,7 @@ import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { loadProjects } from '@/infrastructure/storage/projectRepository'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
+import { SliderTabs } from '../components/SliderTabs'
 import type { ProjectStatus } from '@/core/types'
 
 const STATUS_COLORS: Record<ProjectStatus, [string, string]> = {
@@ -35,22 +36,13 @@ export function Projects() {
     <div style={{ maxWidth: 1180, margin: '0 auto' }}>
       {/* Toolbar */}
       <Reveal style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
-        <div style={{ display: 'flex', gap: 6, background: '#fff', border: '1px solid #e3e8eb', padding: 5, borderRadius: 11 }}>
-          {TABS.map(tb => (
-            <button
-              key={tb.key}
-              onClick={() => dispatch({ type: 'SET_PROY_TAB', payload: tb.key })}
-              style={{
-                border: 'none', cursor: 'pointer', borderRadius: 8,
-                padding: '8px 15px', fontSize: 13, fontWeight: 600,
-                background: proyTab === tb.key ? '#16708f' : 'transparent',
-                color: proyTab === tb.key ? '#fff' : '#6c7b83',
-              }}
-            >
-              {tb.label}
-            </button>
-          ))}
-        </div>
+        <SliderTabs
+          tabs={TABS}
+          active={proyTab}
+          onSelect={key => dispatch({ type: 'SET_PROY_TAB', payload: key })}
+          layoutId="project-tabs"
+          padding="8px 15px"
+        />
         <button
           onClick={() => dispatch({ type: 'SET_VIEW', payload: 'workspace' })}
           style={{
