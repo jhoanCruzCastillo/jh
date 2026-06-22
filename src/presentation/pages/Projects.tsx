@@ -7,6 +7,8 @@ import { Reveal } from '../components/Reveal'
 import { SliderTabs } from '../components/SliderTabs'
 import { AccordionBody } from '../components/Accordion'
 import { Modal } from '../components/Modal'
+import { PdfViewerModal } from '../components/PdfViewerModal'
+import { getBasesPdfUrl } from '@/infrastructure/pdf/basesProyecto'
 import type { ProjectStatus, ProjectDocument } from '@/core/types'
 
 const STATUS_COLORS: Record<ProjectStatus, [string, string]> = {
@@ -51,12 +53,18 @@ export function Projects() {
     return Math.round(docs.reduce((s, d) => s + d.progress, 0) / docs.length)
   }
 
+  const [showCustomModal, setShowCustomModal] = useState(false)
+
   if (mode === 'catalog') {
-    return <ProjectCatalog
-      onSelect={inv => { setSelectedInv(inv); setMode('formats') }}
-      onBack={() => setMode('list')}
-      existingCuis={projects.map(p => p.cui)}
-    />
+    return <>
+      <ProjectCatalog
+        onSelect={inv => { setSelectedInv(inv); setMode('formats') }}
+        onBack={() => setMode('list')}
+        existingCuis={projects.map(p => p.cui)}
+        onCustomProject={() => setShowCustomModal(true)}
+      />
+      <CustomProjectModal open={showCustomModal} onClose={() => setShowCustomModal(false)} onCreated={() => { setRefreshKey(k => k + 1); setShowCustomModal(false); setMode('list') }} />
+    </>
   }
 
   if (mode === 'formats' && selectedInv) {
@@ -165,12 +173,13 @@ const SECTOR_COLORS: Record<string, string> = {
   Transporte: '#e0922f', Recreación: '#36ad46', Energía: '#f5a623', Agricultura: '#6b8e23',
 }
 
-function ProjectCatalog({ onSelect, onBack, existingCuis }: { onSelect: (i: InversionPublica) => void; onBack: () => void; existingCuis: string[] }) {
+function ProjectCatalog({ onSelect, onBack, existingCuis, onCustomProject }: { onSelect: (i: InversionPublica) => void; onBack: () => void; existingCuis: string[]; onCustomProject: () => void }) {
   const [search, setSearch] = useState('')
   const [sector, setSector] = useState('Todos')
   const [distrito, setDistrito] = useState('Todos')
   const [sort, setSort] = useState<'recent' | 'oldest'>('recent')
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards')
+  const [basesInv, setBasesInv] = useState<InversionPublica | null>(null)
 
   const distritos = useMemo(() => {
     const set = new Set(BANCO_INVERSIONES.map(i => i.distrito))
@@ -204,8 +213,15 @@ function ProjectCatalog({ onSelect, onBack, existingCuis }: { onSelect: (i: Inve
           <i className="fa-solid fa-database" style={{ color: '#16708f', marginRight: 10 }} />Banco de Inversiones
         </div>
         <div style={{ fontSize: 13.5, color: '#6c7b83' }}>
-          Selecciona una inversión pública registrada para crear tu proyecto y elaborar su documentación.
+          Selecciona una inversión pública registrada o crea un proyecto personalizado.
         </div>
+        <button onClick={onCustomProject} style={{
+          marginTop: 12, background: '#fff', border: '2px dashed #16708f', borderRadius: 10,
+          padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#16708f', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <i className="fa-solid fa-pen-to-square" style={{ fontSize: 13 }} /> Crear proyecto personalizado
+        </button>
       </Reveal>
 
       {/* Filters */}
@@ -290,9 +306,14 @@ function ProjectCatalog({ onSelect, onBack, existingCuis }: { onSelect: (i: Inve
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#1f2d33' }}>{inv.costoActualizado}</span>
                       </div>
                     </div>
-                    <button onClick={() => onSelect(inv)} style={{ width: '100%', background: '#16708f', color: '#fff', border: 'none', borderRadius: 9, padding: '10px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-                      <i className="fa-solid fa-file-pen" style={{ fontSize: 12 }} /> Elaborar documentación
-                    </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => setBasesInv(inv)} style={{ flex: 'none', background: '#fff', border: '1px solid #e3e8eb', borderRadius: 9, padding: '10px 12px', fontSize: 12, fontWeight: 600, color: '#c0392b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <i className="fa-solid fa-file-pdf" style={{ fontSize: 11 }} /> Bases
+                      </button>
+                      <button onClick={() => onSelect(inv)} style={{ flex: 1, background: '#16708f', color: '#fff', border: 'none', borderRadius: 9, padding: '10px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                        <i className="fa-solid fa-file-pen" style={{ fontSize: 12 }} /> Elaborar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Reveal>
@@ -321,6 +342,9 @@ function ProjectCatalog({ onSelect, onBack, existingCuis }: { onSelect: (i: Inve
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#1f2d33' }}>{inv.costoActualizado}</div>
                     <div style={{ fontSize: 10.5, color: '#9aa7ad' }}>{inv.situacion}</div>
                   </div>
+                  <button onClick={() => setBasesInv(inv)} style={{ flex: 'none', background: '#fff', border: '1px solid #e3e8eb', borderRadius: 8, padding: '8px 10px', fontSize: 11, fontWeight: 600, color: '#c0392b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <i className="fa-solid fa-file-pdf" style={{ fontSize: 10 }} /> Bases
+                  </button>
                   <button onClick={() => onSelect(inv)} style={{ flex: 'none', background: '#16708f', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <i className="fa-solid fa-file-pen" style={{ fontSize: 11 }} /> Elaborar
                   </button>
@@ -336,6 +360,15 @@ function ProjectCatalog({ onSelect, onBack, existingCuis }: { onSelect: (i: Inve
           <div style={{ fontSize: 13, color: '#c2cace' }}>Ajusta los filtros o busca por otro término</div>
         </Reveal>
       )}
+
+      <PdfViewerModal
+        open={basesInv !== null}
+        onClose={() => setBasesInv(null)}
+        title={`Bases — ${basesInv?.nombre ?? ''}`}
+        subtitle={`CUI ${basesInv?.cui ?? ''} · ${basesInv?.sector ?? ''}`}
+        pdfUrl={basesInv ? getBasesPdfUrl(basesInv.nombre, basesInv.cui) : ''}
+        downloadName={`Bases_CUI_${basesInv?.cui ?? ''}.pdf`}
+      />
     </div>
   )
 }
@@ -636,5 +669,121 @@ function FormatSelector({ inversion, onBack, onCreated }: { inversion: Inversion
         </div>
       </Modal>
     </div>
+  )
+}
+
+/* ─── Custom Project Modal ─── */
+const SECTOR_OPTIONS = ['Saneamiento', 'Educación', 'Salud', 'Transporte', 'Recreación', 'Energía', 'Agricultura', 'Otro']
+const SECTOR_ICONS: Record<string, string> = { Saneamiento: 'fa-droplet', Educación: 'fa-school', Salud: 'fa-hospital', Transporte: 'fa-road', Recreación: 'fa-basketball', Energía: 'fa-bolt', Agricultura: 'fa-tractor', Otro: 'fa-folder' }
+
+function CustomProjectModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState('')
+  const [location, setLocation] = useState('')
+  const [sector, setSector] = useState('Saneamiento')
+  const [cui, setCui] = useState('')
+  const [selectedFormats, setSelectedFormats] = useState<string[]>(['Ficha Técnica Estándar'])
+
+  const toggleFormat = (f: string) => {
+    setSelectedFormats(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
+  }
+
+  const handleCreate = () => {
+    if (!name.trim() || selectedFormats.length === 0) return
+    const docs: ProjectDocument[] = selectedFormats.map((fname, i) => {
+      const fmt = ALL_FORMATS.find(f => f.name === fname)
+      return { id: `c-${Date.now()}-${i}`, name: fname, type: fmt?.type ?? 'Ficha Estándar', status: 'Borrador' as const, progress: 0, date: 'Sin iniciar' }
+    })
+    const newProject = {
+      id: `cp-${Date.now()}`, name: name.trim(), location: location.trim() || 'Sin ubicación',
+      sector, cui: cui.trim() || '—', icon: SECTOR_ICONS[sector] ?? 'fa-folder',
+      status: 'Borrador' as const, date: 'Recién creado', documents: docs,
+    }
+    const projects = loadProjects()
+    projects.unshift(newProject)
+    saveProjects(projects)
+    setName(''); setLocation(''); setCui(''); setSector('Saneamiento'); setSelectedFormats(['Ficha Técnica Estándar'])
+    onCreated()
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Crear proyecto personalizado" icon="fa-pen-to-square" width={680}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Name */}
+        <div>
+          <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>Nombre del proyecto *</label>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Mejoramiento del servicio de agua potable…" style={{ width: '100%', padding: '11px 14px', border: '1px solid #e3e8eb', borderRadius: 9, fontSize: 14, outline: 'none', color: '#1f2d33' }} />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div>
+            <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>Ubicación</label>
+            <input value={location} onChange={e => setLocation(e.target.value)} placeholder="Distrito, Provincia, Departamento" style={{ width: '100%', padding: '11px 14px', border: '1px solid #e3e8eb', borderRadius: 9, fontSize: 14, outline: 'none', color: '#1f2d33' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>CUI (opcional)</label>
+            <input value={cui} onChange={e => setCui(e.target.value)} placeholder="7 dígitos" style={{ width: '100%', padding: '11px 14px', border: '1px solid #e3e8eb', borderRadius: 9, fontSize: 14, outline: 'none', color: '#1f2d33' }} />
+          </div>
+        </div>
+
+        <div>
+          <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>Sector</label>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {SECTOR_OPTIONS.map(s => (
+              <button key={s} onClick={() => setSector(s)} style={{
+                padding: '8px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+                border: `1.5px solid ${sector === s ? '#16708f' : '#e3e8eb'}`,
+                background: sector === s ? '#e3f1f5' : '#fff',
+                color: sector === s ? '#16708f' : '#6c7b83',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <i className={`fa-solid ${SECTOR_ICONS[s]}`} style={{ fontSize: 11 }} /> {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Formats */}
+        <div>
+          <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>Documentos a elaborar *</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {ALL_FORMATS.map(f => {
+              const checked = selectedFormats.includes(f.name)
+              return (
+                <label key={f.name} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                  background: checked ? '#f0f9ff' : '#f8fafb', border: `1px solid ${checked ? '#16708f' : '#eef1f3'}`,
+                  borderRadius: 9, cursor: 'pointer', fontSize: 12.5, transition: 'all .15s',
+                }}>
+                  <div style={{ width: 18, height: 18, borderRadius: 4, flex: 'none', border: `2px solid ${checked ? '#16708f' : '#d7dee2'}`, background: checked ? '#16708f' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {checked && <i className="fa-solid fa-check" style={{ color: '#fff', fontSize: 9 }} />}
+                  </div>
+                  <input type="checkbox" checked={checked} onChange={() => toggleFormat(f.name)} style={{ display: 'none' }} />
+                  <i className={`fa-solid ${f.icon}`} style={{ color: checked ? '#16708f' : '#9aa7ad', fontSize: 12 }} />
+                  <span style={{ color: '#46555c', fontWeight: 500 }}>{f.name}</span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid #eef1f3' }}>
+          <div style={{ fontSize: 13, color: '#6c7b83' }}>
+            <strong style={{ color: '#16708f' }}>{selectedFormats.length}</strong> documento{selectedFormats.length !== 1 ? 's' : ''}
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{ background: '#fff', color: '#46555c', border: '1px solid #e3e8eb', borderRadius: 9, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+            <button onClick={handleCreate} disabled={!name.trim() || selectedFormats.length === 0} style={{
+              background: !name.trim() || selectedFormats.length === 0 ? '#c2cace' : '#36ad46',
+              color: '#fff', border: 'none', borderRadius: 9, padding: '10px 22px', fontSize: 13,
+              fontWeight: 700, cursor: !name.trim() || selectedFormats.length === 0 ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: 7,
+            }}>
+              <i className="fa-solid fa-rocket" /> Crear proyecto
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   )
 }

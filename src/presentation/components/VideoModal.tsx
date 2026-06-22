@@ -65,7 +65,7 @@ export function VideoModal({ open, onClose, title }: Props) {
             background: 'rgba(0,0,0,.55)',
             backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '2vh 3vw',
+            padding: '2vh 2vw',
           }}
         >
           <motion.div
@@ -75,7 +75,7 @@ export function VideoModal({ open, onClose, title }: Props) {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#fff', borderRadius: 16, width: '100%', maxWidth: 1200,
+              background: '#fff', borderRadius: 16, width: '100%', maxWidth: 1440,
               height: '96vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0,0,0,.25)',
             }}
@@ -104,10 +104,10 @@ export function VideoModal({ open, onClose, title }: Props) {
             {/* Body: video + sidebar */}
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
               {/* Left: video + comments */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px 18px 0' }}>
                 {/* Video player */}
                 <div style={{
-                  flex: 'none', background: '#000', position: 'relative', aspectRatio: '16/9', maxHeight: '55vh',
+                  flex: 'none', background: '#000', position: 'relative', aspectRatio: '16/9', maxHeight: '42vh', borderRadius: 12, overflow: 'hidden',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 }}
                   onClick={() => { setPlaying(!playing); if (!playing) setProgress(Math.min(progress + 5, 100)) }}
