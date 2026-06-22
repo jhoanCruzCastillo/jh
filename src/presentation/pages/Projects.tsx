@@ -682,6 +682,8 @@ function CustomProjectModal({ open, onClose, onCreated }: { open: boolean; onClo
   const [sector, setSector] = useState('Saneamiento')
   const [cui, setCui] = useState('')
   const [selectedFormats, setSelectedFormats] = useState<string[]>(['Ficha Técnica Estándar'])
+  const [fmtSearch, setFmtSearch] = useState('')
+  const [fmtFilter, setFmtFilter] = useState('Todos')
 
   const toggleFormat = (f: string) => {
     setSelectedFormats(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
@@ -706,7 +708,24 @@ function CustomProjectModal({ open, onClose, onCreated }: { open: boolean; onClo
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Crear proyecto personalizado" icon="fa-pen-to-square" width={680}>
+    <Modal open={open} onClose={onClose} title="Crear proyecto personalizado" icon="fa-pen-to-square" width={680} fixedHeight footer={
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 13, color: '#6c7b83' }}>
+          <strong style={{ color: '#16708f' }}>{selectedFormats.length}</strong> documento{selectedFormats.length !== 1 ? 's' : ''}
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ background: '#fff', color: '#46555c', border: '1px solid #e3e8eb', borderRadius: 9, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={handleCreate} disabled={!name.trim() || selectedFormats.length === 0} style={{
+            background: !name.trim() || selectedFormats.length === 0 ? '#c2cace' : '#36ad46',
+            color: '#fff', border: 'none', borderRadius: 9, padding: '10px 22px', fontSize: 13,
+            fontWeight: 700, cursor: !name.trim() || selectedFormats.length === 0 ? 'default' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 7,
+          }}>
+            <i className="fa-solid fa-rocket" /> Crear proyecto
+          </button>
+        </div>
+      </div>
+    }>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Name */}
         <div>
@@ -744,9 +763,36 @@ function CustomProjectModal({ open, onClose, onCreated }: { open: boolean; onClo
 
         {/* Formats */}
         <div>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 6, display: 'block' }}>Documentos a elaborar *</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {ALL_FORMATS.map(f => {
+          <label style={{ fontSize: 13, fontWeight: 600, color: '#46555c', marginBottom: 8, display: 'block' }}>Documentos a elaborar *</label>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 7, background: '#f4f7f8', border: '1px solid #e3e8eb', borderRadius: 8, padding: '7px 10px' }}>
+              <i className="fa-solid fa-magnifying-glass" style={{ color: '#9aa7ad', fontSize: 11 }} />
+              <input value={fmtSearch} onChange={e => setFmtSearch(e.target.value)} placeholder="Buscar formato…" style={{ border: 'none', outline: 'none', background: 'none', flex: 1, fontSize: 12.5, color: '#1f2d33' }} />
+            </div>
+            <select value={fmtFilter} onChange={e => setFmtFilter(e.target.value)} style={{ padding: '7px 10px', border: '1px solid #e3e8eb', borderRadius: 8, fontSize: 12, color: '#1f2d33', background: '#f4f7f8', cursor: 'pointer', outline: 'none' }}>
+              {['Todos', 'IOARR', 'Ficha Estándar', 'Perfil', 'Expediente'].map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          {selectedFormats.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+              {selectedFormats.map(s => (
+                <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#e3f1f5', color: '#16708f', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 14 }}>
+                  {s}
+                  <button onClick={() => toggleFormat(s)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                    <i className="fa-solid fa-xmark" style={{ fontSize: 10, color: '#16708f' }} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
+            {ALL_FORMATS
+              .filter(f => {
+                if (fmtSearch.length >= 2 && !f.name.toLowerCase().includes(fmtSearch.toLowerCase())) return false
+                if (fmtFilter !== 'Todos' && f.type !== fmtFilter) return false
+                return true
+              })
+              .map(f => {
               const checked = selectedFormats.includes(f.name)
               return (
                 <label key={f.name} style={{
@@ -766,23 +812,6 @@ function CustomProjectModal({ open, onClose, onCreated }: { open: boolean; onClo
           </div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid #eef1f3' }}>
-          <div style={{ fontSize: 13, color: '#6c7b83' }}>
-            <strong style={{ color: '#16708f' }}>{selectedFormats.length}</strong> documento{selectedFormats.length !== 1 ? 's' : ''}
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{ background: '#fff', color: '#46555c', border: '1px solid #e3e8eb', borderRadius: 9, padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
-            <button onClick={handleCreate} disabled={!name.trim() || selectedFormats.length === 0} style={{
-              background: !name.trim() || selectedFormats.length === 0 ? '#c2cace' : '#36ad46',
-              color: '#fff', border: 'none', borderRadius: 9, padding: '10px 22px', fontSize: 13,
-              fontWeight: 700, cursor: !name.trim() || selectedFormats.length === 0 ? 'default' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: 7,
-            }}>
-              <i className="fa-solid fa-rocket" /> Crear proyecto
-            </button>
-          </div>
-        </div>
       </div>
     </Modal>
   )

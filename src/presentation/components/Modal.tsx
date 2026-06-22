@@ -8,9 +8,11 @@ interface Props {
   icon?: string
   children: ReactNode
   width?: number
+  fixedHeight?: boolean
+  footer?: ReactNode
 }
 
-export function Modal({ open, onClose, title, icon, children, width = 560 }: Props) {
+export function Modal({ open, onClose, title, icon, children, width = 560, fixedHeight = false, footer }: Props) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -43,7 +45,7 @@ export function Modal({ open, onClose, title, icon, children, width = 560 }: Pro
             onClick={e => e.stopPropagation()}
             style={{
               background: '#fff', borderRadius: 18, width: '100%', maxWidth: width,
-              maxHeight: 'calc(100vh - 48px)', overflow: 'auto',
+              ...(fixedHeight ? { height: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column' as const } : { maxHeight: 'calc(100vh - 48px)', overflow: 'auto' }),
               boxShadow: '0 24px 48px rgba(0,0,0,.18)',
             }}
           >
@@ -75,9 +77,15 @@ export function Modal({ open, onClose, title, icon, children, width = 560 }: Pro
               </button>
             </div>
             {/* Body */}
-            <div style={{ padding: '20px 24px 24px' }}>
+            <div style={{ padding: '20px 24px 24px', ...(fixedHeight ? { flex: 1, overflowY: 'auto' } : {}) }}>
               {children}
             </div>
+            {/* Footer */}
+            {footer && (
+              <div style={{ flex: 'none', padding: '14px 24px', borderTop: '1px solid #eef1f3' }}>
+                {footer}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
