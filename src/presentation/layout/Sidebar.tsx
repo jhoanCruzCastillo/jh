@@ -1,6 +1,7 @@
+import { useRef } from 'react'
 import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { NAV_ITEMS, PERFILES } from '@/core/data/navigation'
-import { MentorBot } from '@/presentation/components/MentorBot'
+import { MentorBot, type MentorBotHandle } from '@/presentation/components/MentorBot'
 import type { ViewKey } from '@/core/types'
 
 export function Sidebar() {
@@ -8,6 +9,7 @@ export function Sidebar() {
   const dispatch = useAppDispatch()
   const perfilObj = PERFILES.find(p => p.key === perfil) ?? PERFILES[0]
 
+  const botRef = useRef<MentorBotHandle>(null)
   const go = (key: ViewKey) => dispatch({ type: 'SET_VIEW', payload: key })
 
   return (
@@ -71,7 +73,7 @@ export function Sidebar() {
           return (
             <button
               key={n.key}
-              onClick={() => go(n.key)}
+              onClick={() => { if (n.key === 'asistente') botRef.current?.trigger('wink'); go(n.key) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 13, width: '100%',
                 border: 'none', cursor: 'pointer', borderRadius: 9,
@@ -84,7 +86,7 @@ export function Sidebar() {
             >
               {n.key === 'asistente' ? (
                 <span style={{ width: 20, display: 'flex', justifyContent: 'center', color: active ? '#36ad46' : '#7fb9c7' }}>
-                  <MentorBot size={18} animation="wink" loop loopDelay={5000} />
+                  <MentorBot ref={botRef} size={18} randomize />
                 </span>
               ) : (
                 <i className={`fa-solid ${n.icon}`} style={{ fontSize: 16, width: 20, textAlign: 'center', color: active ? '#36ad46' : '#7fb9c7' }} />

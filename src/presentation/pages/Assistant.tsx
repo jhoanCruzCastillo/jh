@@ -62,13 +62,6 @@ export function Assistant() {
       }}>
         {/* Chat header */}
         <div style={{ flex: 'none', padding: '16px 20px', borderBottom: '1px solid #eef1f3', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 11,
-            background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={22} animation="wink" loop loopDelay={2500} /></span>
-          </div>
           <div style={{ flex: 1 }}>
             <div className="heading-font" style={{ fontWeight: 700, fontSize: 16 }}>Mentor de Inversión Pública</div>
             <div style={{ fontSize: 12, color: '#36ad46', fontWeight: 600 }}>
@@ -79,21 +72,23 @@ export function Assistant() {
           <i className="fa-solid fa-shield-halved" style={{ color: '#9aa7ad' }} title="Basado en lineamientos Invierte.pe" />
         </div>
 
-        {/* Messages */}
-        <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: 14, background: '#f8fafb' }}>
+        {/* Messages wrapper */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          <div ref={chatRef} style={{ height: '100%', overflowY: 'auto', padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {chat.map(m => (
-            <div key={m.id} style={{ display: 'flex', gap: 9, alignItems: 'flex-end', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end' }}>
+            <div key={m.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end' }}>
               {m.from === 'bot' && (
                 <div style={{
-                  flex: 'none', width: 32, height: 32, borderRadius: 9,
+                  flex: 'none', width: 44, height: 44, borderRadius: '50%',
                   background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  alignSelf: 'flex-end',
                 }}>
-                  <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={14} animation="default" /></span>
+                  <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={28} animation="blink" loop loopDelay={5000} /></span>
                 </div>
               )}
               <div style={{
-                maxWidth: '78%',
+                maxWidth: '75%',
                 background: m.from === 'bot' ? '#fff' : '#16708f',
                 border: m.from === 'bot' ? '1px solid #e3e8eb' : 'none',
                 borderRadius: m.from === 'bot' ? '14px 14px 14px 4px' : '14px 14px 4px 14px',
@@ -107,13 +102,13 @@ export function Assistant() {
             </div>
           ))}
           {thinking && (
-            <div style={{ display: 'flex', gap: 9, alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
               <div style={{
-                flex: 'none', width: 32, height: 32, borderRadius: 9,
+                flex: 'none', width: 44, height: 44, borderRadius: '50%',
                 background: 'linear-gradient(140deg,#1a7fa0,#36ad46)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={14} animation="default" /></span>
+                <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={28} animation="default" loop loopDelay={1500} /></span>
               </div>
               <div style={{
                 background: '#fff', border: '1px solid #e3e8eb',
@@ -123,6 +118,7 @@ export function Assistant() {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* Input area */}

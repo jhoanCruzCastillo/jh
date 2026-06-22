@@ -6,6 +6,7 @@ import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
 import { SliderTabs } from '../components/SliderTabs'
 import { AccordionBody } from '../components/Accordion'
+import { Modal } from '../components/Modal'
 import type { ProjectStatus, ProjectDocument } from '@/core/types'
 
 const STATUS_COLORS: Record<ProjectStatus, [string, string]> = {
@@ -352,13 +353,32 @@ const ALL_FORMATS = [
   { name: 'Estructura de Expediente Técnico', type: 'Expediente', icon: 'fa-sitemap' },
 ]
 
+const FORMAT_CATEGORIES = ['Todos', 'IOARR', 'Fichas Técnicas', 'Perfiles', 'Expedientes', 'Otros']
+
+function getFormatCategory(type: string) {
+  if (type === 'IOARR' || type === 'Registro') return 'IOARR'
+  if (type === 'Ficha Estándar') return 'Fichas Técnicas'
+  if (type === 'Perfil') return 'Perfiles'
+  if (type === 'Expediente') return 'Expedientes'
+  return 'Otros'
+}
+
 function FormatSelector({ inversion, onBack, onCreated }: { inversion: InversionPublica; onBack: () => void; onCreated: () => void }) {
   const suggested = FORMATOS_POR_TIPO[inversion.tipoFormato] ?? ['Ficha Técnica Estándar']
   const [selected, setSelected] = useState<string[]>(suggested)
+  const [showCatalog, setShowCatalog] = useState(false)
+  const [catalogSearch, setCatalogSearch] = useState('')
+  const [catalogCategory, setCatalogCategory] = useState('Todos')
 
   const toggle = (name: string) => {
     setSelected(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
   }
+
+  const catalogFormats = ALL_FORMATS.filter(f => {
+    if (catalogSearch.length >= 2 && !f.name.toLowerCase().includes(catalogSearch.toLowerCase())) return false
+    if (catalogCategory !== 'Todos' && getFormatCategory(f.type) !== catalogCategory) return false
+    return true
+  })
 
   const handleCreate = () => {
     const docs: ProjectDocument[] = selected.map((name, i) => {
@@ -416,13 +436,13 @@ function FormatSelector({ inversion, onBack, onCreated }: { inversion: Inversion
         </div>
       </Reveal>
 
-      {/* Format selection */}
+      {/* Heading */}
       <Reveal delay={0.05}>
         <div className="heading-font" style={{ fontWeight: 700, fontSize: 18, color: '#1f2d33', marginBottom: 4 }}>
-          <i className="fa-solid fa-layer-group" style={{ color: '#16708f', marginRight: 10 }} />Selecciona los documentos a elaborar
+          <i className="fa-solid fa-layer-group" style={{ color: '#16708f', marginRight: 10 }} />Documentos a elaborar
         </div>
         <div style={{ fontSize: 13, color: '#6c7b83', marginBottom: 18, lineHeight: 1.5 }}>
-          Según el tipo <strong>{inversion.tipoFormato}</strong>, se sugieren los formatos marcados. Puedes agregar otros según necesites.
+          Según el tipo <strong>{inversion.tipoFormato}</strong>, se sugieren los formatos marcados.
         </div>
       </Reveal>
 
@@ -432,7 +452,7 @@ function FormatSelector({ inversion, onBack, onCreated }: { inversion: Inversion
           <i className="fa-solid fa-star" style={{ marginRight: 5 }} />SUGERIDOS PARA ESTE PROYECTO
         </div>
       </Reveal>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
         {ALL_FORMATS.filter(f => suggested.includes(f.name)).map((f, i) => {
           const checked = selected.includes(f.name)
           return (
@@ -460,35 +480,54 @@ function FormatSelector({ inversion, onBack, onCreated }: { inversion: Inversion
         })}
       </div>
 
-      {/* Additional */}
-      <Reveal delay={0.15}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9aa7ad', letterSpacing: '.4px', marginBottom: 10 }}>
-          FORMATOS ADICIONALES
-        </div>
+      {/* Additional formats already added */}
+      {selected.filter(s => !suggested.includes(s)).length > 0 && (
+        <Reveal>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#16708f', letterSpacing: '.4px', marginBottom: 10 }}>
+            <i className="fa-solid fa-plus-circle" style={{ marginRight: 5 }} />FORMATOS ADICIONALES AGREGADOS
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+            {selected.filter(s => !suggested.includes(s)).map(name => {
+              const f = ALL_FORMATS.find(x => x.name === name)
+              return (
+                <div key={name} style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+                  background: '#f0f9ff', border: '1.5px solid #16708f', borderRadius: 10,
+                }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#e3f1f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                    <i className={`fa-solid ${f?.icon ?? 'fa-file'}`} style={{ color: '#16708f', fontSize: 14 }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2d33' }}>{name}</div>
+                    <div style={{ fontSize: 11, color: '#9aa7ad' }}>{f?.type}</div>
+                  </div>
+                  <button onClick={() => toggle(name)} style={{ flex: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    <i className="fa-solid fa-xmark" style={{ color: '#c0392b', fontSize: 14 }} />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </Reveal>
+      )}
+
+      {/* Add more button */}
+      <Reveal delay={0.12}>
+        <button onClick={() => setShowCatalog(true)} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%',
+          padding: '14px', background: '#fff', border: '2px dashed #d7dee2', borderRadius: 12,
+          cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#16708f', marginBottom: 24,
+          transition: 'all .15s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#16708f'; e.currentTarget.style.background = '#f0f9ff' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#d7dee2'; e.currentTarget.style.background = '#fff' }}
+        >
+          <i className="fa-solid fa-plus" /> Agregar más formatos
+        </button>
       </Reveal>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 30 }}>
-        {ALL_FORMATS.filter(f => !suggested.includes(f.name)).map(f => {
-          const checked = selected.includes(f.name)
-          return (
-            <label key={f.name} style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-              background: checked ? '#f0f9ff' : '#f8fafb',
-              border: `1px solid ${checked ? '#16708f' : '#eef1f3'}`,
-              borderRadius: 10, cursor: 'pointer', fontSize: 13, transition: 'all .15s',
-            }}>
-              <div style={{ width: 20, height: 20, borderRadius: 5, flex: 'none', border: `2px solid ${checked ? '#16708f' : '#d7dee2'}`, background: checked ? '#16708f' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {checked && <i className="fa-solid fa-check" style={{ color: '#fff', fontSize: 10 }} />}
-              </div>
-              <input type="checkbox" checked={checked} onChange={() => toggle(f.name)} style={{ display: 'none' }} />
-              <i className={`fa-solid ${f.icon}`} style={{ color: checked ? '#16708f' : '#c2cace', fontSize: 14 }} />
-              <span style={{ color: '#46555c', fontWeight: 500 }}>{f.name}</span>
-            </label>
-          )
-        })}
-      </div>
 
       {/* Action bar */}
-      <Reveal delay={0.2} style={{
+      <Reveal delay={0.15} style={{
         position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #eef1f3',
         padding: '16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
@@ -504,6 +543,98 @@ function FormatSelector({ inversion, onBack, onCreated }: { inversion: Inversion
           <i className="fa-solid fa-rocket" /> Crear proyecto y comenzar
         </button>
       </Reveal>
+
+      {/* Format Catalog Modal */}
+      <Modal open={showCatalog} onClose={() => { setShowCatalog(false); setCatalogSearch(''); setCatalogCategory('Todos') }} title="Catálogo de Formatos" icon="fa-layer-group" width={860}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, minHeight: 400 }}>
+          {/* Left: catalog */}
+          <div>
+            {/* Filters */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: '#f4f7f8', border: '1px solid #e3e8eb', borderRadius: 9, padding: '9px 12px' }}>
+                <i className="fa-solid fa-magnifying-glass" style={{ color: '#9aa7ad', fontSize: 13 }} />
+                <input value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)} placeholder="Buscar formato…" style={{ border: 'none', outline: 'none', background: 'none', flex: 1, fontSize: 13, color: '#1f2d33' }} />
+              </div>
+              <select value={catalogCategory} onChange={e => setCatalogCategory(e.target.value)} style={{ padding: '9px 12px', border: '1px solid #e3e8eb', borderRadius: 9, fontSize: 13, color: '#1f2d33', background: '#f4f7f8', cursor: 'pointer', outline: 'none' }}>
+                {FORMAT_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* Format list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {catalogFormats.map(f => {
+                const isSelected = selected.includes(f.name)
+                return (
+                  <div key={f.name} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
+                    background: isSelected ? '#f0f9ff' : '#fff',
+                    border: `1px solid ${isSelected ? '#16708f' : '#e3e8eb'}`,
+                    borderRadius: 11, transition: 'all .15s',
+                  }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: isSelected ? '#e3f1f5' : '#f4f7f8', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                      <i className={`fa-solid ${f.icon}`} style={{ color: isSelected ? '#16708f' : '#9aa7ad', fontSize: 16 }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1f2d33' }}>{f.name}</div>
+                      <div style={{ fontSize: 11, color: '#9aa7ad', marginTop: 1 }}>{f.type} · {getFormatCategory(f.type)}</div>
+                    </div>
+                    <button onClick={() => toggle(f.name)} style={{
+                      flex: 'none', background: isSelected ? '#c0392b' : '#16708f', color: '#fff',
+                      border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                    }}>
+                      <i className={`fa-solid ${isSelected ? 'fa-minus' : 'fa-plus'}`} style={{ fontSize: 10 }} />
+                      {isSelected ? 'Quitar' : 'Agregar'}
+                    </button>
+                  </div>
+                )
+              })}
+              {catalogFormats.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '30px', color: '#9aa7ad', fontSize: 13 }}>
+                  No se encontraron formatos con ese filtro.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: selected */}
+          <div style={{ borderLeft: '1px solid #eef1f3', paddingLeft: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#16708f', letterSpacing: '.3px', marginBottom: 12 }}>
+              <i className="fa-solid fa-check-double" style={{ marginRight: 6 }} />SELECCIONADOS ({selected.length})
+            </div>
+            {selected.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {selected.map(name => {
+                  const f = ALL_FORMATS.find(x => x.name === name)
+                  const isSuggested = suggested.includes(name)
+                  return (
+                    <div key={name} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                      background: isSuggested ? '#e6f5e9' : '#f0f9ff',
+                      border: `1px solid ${isSuggested ? '#d4edda' : '#bfe0ea'}`,
+                      borderRadius: 9,
+                    }}>
+                      <i className={`fa-solid ${f?.icon ?? 'fa-file'}`} style={{ color: isSuggested ? '#36ad46' : '#16708f', fontSize: 13, flex: 'none' }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#1f2d33', lineHeight: 1.2 }}>{name}</div>
+                        {isSuggested && <div style={{ fontSize: 10, color: '#36ad46', marginTop: 1 }}>Sugerido</div>}
+                      </div>
+                      <button onClick={() => toggle(name)} style={{ flex: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                        <i className="fa-solid fa-xmark" style={{ color: '#c0392b', fontSize: 12 }} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '30px 10px', color: '#c2cace', fontSize: 12 }}>
+                <i className="fa-solid fa-inbox" style={{ fontSize: 24, marginBottom: 8, display: 'block' }} />
+                Ningún formato seleccionado
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

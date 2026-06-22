@@ -3,6 +3,7 @@ import { SECTIONS } from '@/core/data/sections'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
 import { MentorBot } from '../components/MentorBot'
+import { FieldHelper } from '../components/FieldHelper'
 
 export function Workspace() {
   const { step, doneSteps } = useAppState()
@@ -93,6 +94,7 @@ export function Workspace() {
                   {f.label}
                   {f.ok && <i className="fa-solid fa-circle-check" style={{ color: '#36ad46', fontSize: 12 }} />}
                   {f.warn && <i className="fa-solid fa-triangle-exclamation" style={{ color: '#e0922f', fontSize: 12 }} />}
+                  <FieldHelper label={f.label} hint={f.hint} />
                 </label>
                 {f.isText && !f.area && !f.isSelect && (
                   <input
@@ -176,10 +178,10 @@ export function Workspace() {
             display: 'flex', alignItems: 'center', gap: 10,
           }}>
             <div style={{
-              width: 34, height: 34, borderRadius: 9,
+              width: 40, height: 40, borderRadius: '50%',
               background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={18} animation="blink" loop loopDelay={3000} /></span>
+              <span style={{ color: '#fff', display: 'flex' }}><MentorBot size={24} animation="blink" loop loopDelay={3000} /></span>
             </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>Mentor IA</div>
