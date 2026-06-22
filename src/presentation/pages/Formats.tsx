@@ -3,6 +3,7 @@ import { ALL_FORMATS_DATA, FORMAT_CATEGORIES, type FormatDef } from '@/core/data
 import { useAppDispatch } from '@/app/AppContext'
 import { Reveal } from '../components/Reveal'
 import { AccordionBody } from '../components/Accordion'
+import { Modal } from '../components/Modal'
 
 const EXT_COLORS: Record<string, [string, string]> = {
   XLSX: ['#e6f5e9', '#2e9a3d'],
@@ -96,7 +97,7 @@ export function Formats() {
                   <span style={{ fontSize: 11, color: '#9aa7ad' }}>({items.length})</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-                  {items.map(f => <FormatCard key={f.id} format={f} expanded={expandedId === f.id} onToggle={() => setExpandedId(expandedId === f.id ? null : f.id)} onGoToProject={() => dispatch({ type: 'SET_VIEW', payload: 'proyectos' })} />)}
+                  {items.map(f => <FormatCard key={f.id} format={f} onToggle={() => setExpandedId(f.id)} />)}
                 </div>
               </Reveal>
             ))}
@@ -112,18 +113,34 @@ export function Formats() {
           <div style={{ fontSize: 15, color: '#9aa7ad' }}>No se encontraron formatos</div>
         </Reveal>
       )}
+
+      {/* Detail Modal (grid mode) */}
+      {(() => {
+        const sf = ALL_FORMATS_DATA.find(f => f.id === expandedId)
+        if (!sf || viewMode !== 'grid') return null
+        return (
+          <Modal open={true} onClose={() => setExpandedId(null)} title={sf.name} icon={sf.icon} width={640}>
+            <FormatDetail f={sf} onGoToProject={() => { setExpandedId(null); dispatch({ type: 'SET_VIEW', payload: 'proyectos' }) }} />
+          </Modal>
+        )
+      })()}
     </div>
   )
 }
 
+const AUTHOR_STYLES: Record<string, [string, string, string]> = {
+  oficial: ['#16708f', '#e3f1f5', 'fa-user-tie'],
+  usuario: ['#36ad46', '#e6f5e9', 'fa-user'],
+  entrenamiento: ['#e0922f', '#fff4e6', 'fa-dumbbell'],
+}
+
 /* ─── Expanded Detail (shared) ─── */
 function FormatDetail({ f, onGoToProject }: { f: FormatDef; onGoToProject: () => void }) {
-  const [detailTab, setDetailTab] = useState<'vacio' | 'ejemplo'>('vacio')
-  const [bg, color] = EXT_COLORS[f.ext] ?? ['#eef1f3', '#6c7b83']
+  const [detailTab, setDetailTab] = useState<'vacio' | 'llenadas'>('vacio')
 
   return (
     <div style={{ borderTop: '1px solid #eef1f3', padding: '16px 18px' }}>
-      {/* Tabs: Vacío / Ejemplo */}
+      {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#f4f7f8', padding: 3, borderRadius: 9, marginBottom: 16 }}>
         <button onClick={() => setDetailTab('vacio')} style={{
           flex: 1, border: 'none', cursor: 'pointer', borderRadius: 7, padding: '8px',
@@ -134,14 +151,14 @@ function FormatDetail({ f, onGoToProject }: { f: FormatDef; onGoToProject: () =>
         }}>
           <i className="fa-solid fa-file" style={{ fontSize: 11 }} /> Formato vacío
         </button>
-        <button onClick={() => setDetailTab('ejemplo')} style={{
+        <button onClick={() => setDetailTab('llenadas')} style={{
           flex: 1, border: 'none', cursor: 'pointer', borderRadius: 7, padding: '8px',
           fontSize: 12.5, fontWeight: 600,
-          background: detailTab === 'ejemplo' ? '#e0922f' : 'transparent',
-          color: detailTab === 'ejemplo' ? '#fff' : '#6c7b83',
+          background: detailTab === 'llenadas' ? '#e0922f' : 'transparent',
+          color: detailTab === 'llenadas' ? '#fff' : '#6c7b83',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
-          <i className="fa-solid fa-file-pen" style={{ fontSize: 11 }} /> Plantilla llenada
+          <i className="fa-solid fa-file-pen" style={{ fontSize: 11 }} /> Plantillas llenadas ({f.filledTemplates.length})
         </button>
       </div>
 
@@ -162,27 +179,47 @@ function FormatDetail({ f, onGoToProject }: { f: FormatDef; onGoToProject: () =>
         </div>
       )}
 
-      {detailTab === 'ejemplo' && (
+      {detailTab === 'llenadas' && (
         <div>
-          <div style={{ fontSize: 13, color: '#6c7b83', lineHeight: 1.5, marginBottom: 14 }}>{f.exampleDesc}</div>
-          {/* Preview placeholder */}
-          <div style={{
-            background: '#f4f7f8', border: '1px solid #eef1f3', borderRadius: 10,
-            padding: '20px', textAlign: 'center', marginBottom: 14,
-          }}>
-            <div style={{ width: 50, height: 50, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 14, fontWeight: 800, color }}>
-              {f.ext}
+          {f.filledTemplates.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {f.filledTemplates.map(t => {
+                const [aColor, aBg, aIcon] = AUTHOR_STYLES[t.authorType] ?? ['#6c7b83', '#eef1f3', 'fa-user']
+                return (
+                  <div key={t.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+                    background: '#fff', border: '1px solid #eef1f3', borderRadius: 11,
+                  }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: aBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                      <i className={`fa-solid ${aIcon}`} style={{ color: aColor, fontSize: 14 }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1f2d33', lineHeight: 1.25 }}>{t.label}</div>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11.5, color: '#9aa7ad' }}>
+                        <span style={{ fontWeight: 600, color: aColor }}>
+                          {t.authorType === 'entrenamiento' ? 'Práctica' : t.authorType === 'oficial' ? 'Docente' : 'Tú'}
+                          {' · '}{t.author}
+                        </span>
+                        <span>{t.date}</span>
+                      </div>
+                    </div>
+                    <button style={{
+                      flex: 'none', background: '#e0922f', color: '#fff', border: 'none', borderRadius: 8,
+                      padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                    }}>
+                      <i className="fa-solid fa-download" style={{ fontSize: 10 }} /> Descargar
+                    </button>
+                  </div>
+                )
+              })}
             </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2d33', marginBottom: 2 }}>{f.name}</div>
-            <div style={{ fontSize: 11.5, color: '#9aa7ad' }}>Plantilla de ejemplo llenada</div>
-          </div>
-          <button style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%',
-            background: '#e0922f', color: '#fff', border: 'none', borderRadius: 9,
-            padding: '10px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-          }}>
-            <i className="fa-solid fa-download" style={{ fontSize: 12 }} /> Descargar ejemplo llenado ({f.ext})
-          </button>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '24px', color: '#9aa7ad', fontSize: 13 }}>
+              <i className="fa-solid fa-inbox" style={{ fontSize: 24, marginBottom: 8, display: 'block', color: '#d7dee2' }} />
+              No hay plantillas llenadas aún para este formato.
+            </div>
+          )}
         </div>
       )}
 
@@ -210,16 +247,18 @@ function FormatDetail({ f, onGoToProject }: { f: FormatDef; onGoToProject: () =>
 }
 
 /* ─── Grid Card ─── */
-function FormatCard({ format: f, expanded, onToggle, onGoToProject }: { format: FormatDef; expanded: boolean; onToggle: () => void; onGoToProject: () => void }) {
+function FormatCard({ format: f, onToggle }: { format: FormatDef; onToggle: () => void }) {
   const [bg, color] = EXT_COLORS[f.ext] ?? ['#eef1f3', '#6c7b83']
 
   return (
     <div style={{
-      background: '#fff', border: `1.5px solid ${expanded ? '#16708f' : '#e3e8eb'}`, borderRadius: 14,
-      overflow: 'hidden', transition: 'all .15s',
-      boxShadow: expanded ? '0 4px 16px rgba(22,112,143,.08)' : '0 1px 3px rgba(0,0,0,.04)',
-    }}>
-      <div style={{ padding: '18px 18px 14px', cursor: 'pointer' }} onClick={onToggle}>
+      background: '#fff', border: '1.5px solid #e3e8eb', borderRadius: 14,
+      overflow: 'hidden', transition: 'all .15s', boxShadow: '0 1px 3px rgba(0,0,0,.04)',
+    }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#16708f'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,.06)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e3e8eb'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.04)' }}
+    >
+      <div style={{ padding: '18px 18px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color }}>{f.ext}</div>
           {f.usedByProjects.length > 0 && (
@@ -233,21 +272,15 @@ function FormatCard({ format: f, expanded, onToggle, onGoToProject }: { format: 
           {f.description.length > 80 ? f.description.slice(0, 80) + '…' : f.description}
         </div>
       </div>
-
-      <div style={{ padding: '0 18px 14px', display: 'flex', gap: 8 }}>
+      <div style={{ padding: '0 18px 14px' }}>
         <button onClick={onToggle} style={{
-          flex: 1, background: expanded ? '#e3f1f5' : '#f4f7f8', color: '#16708f', border: '1px solid #e3e8eb',
+          width: '100%', background: '#f4f7f8', color: '#16708f', border: '1px solid #e3e8eb',
           borderRadius: 9, padding: '9px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
-          <i className={`fa-solid ${expanded ? 'fa-chevron-up' : 'fa-eye'}`} style={{ fontSize: 11 }} />
-          {expanded ? 'Cerrar' : 'Ver detalles'}
+          <i className="fa-solid fa-eye" style={{ fontSize: 11 }} /> Ver detalles
         </button>
       </div>
-
-      <AccordionBody open={expanded}>
-        <FormatDetail f={f} onGoToProject={onGoToProject} />
-      </AccordionBody>
     </div>
   )
 }

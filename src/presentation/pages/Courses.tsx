@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { COURSES, CERTIFICATES, DIGITAL_BOOKS, COURSE_TABS, INSTRUCTOR_AVATARS, INSTRUCTOR_BIOS, DIPLOMA_LINKS } from '@/core/data/courses'
 import { ResourceModals } from '../components/ResourceModals'
 import { AccordionBody } from '../components/Accordion'
+import { VideoModal } from '../components/VideoModal'
 import { TALLERES } from '@/core/data/plans'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
@@ -130,6 +131,7 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
   const [activeResource, setActiveResource] = useState<string | null>(null)
   const [expandedModule, setExpandedModule] = useState<CourseModule | null>(null)
   const [expandedSessionIdx, setExpandedSessionIdx] = useState(0)
+  const [videoTitle, setVideoTitle] = useState<string | null>(null)
   const bio = INSTRUCTOR_BIOS[course.instructor]
 
   const totalClasses = course.modules.flatMap(m => m.sessions.flatMap(s => s.classes)).length
@@ -384,9 +386,10 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
         {/* Left: video + accordion */}
         <div>
           {/* Video */}
-          <Reveal style={{
+          <Reveal style={{ marginBottom: 22 }}>
+          <div onClick={() => setVideoTitle('Video de Bienvenida del Diploma')} style={{
             background: '#111827', borderRadius: 14, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', minHeight: 200, cursor: 'pointer', marginBottom: 22,
+            justifyContent: 'center', minHeight: 200, cursor: 'pointer',
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', border: '2px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
@@ -395,6 +398,7 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
               <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Video de Bienvenida</div>
               <div style={{ fontSize: 12, color: '#7fb9c7', marginTop: 2 }}>2:16 min</div>
             </div>
+          </div>
           </Reveal>
 
           {/* Modules heading */}
@@ -522,8 +526,10 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
                                     </div>
                                   </div>
                                   {cls.completed
-                                    ? <span style={{ fontSize: 11, color: '#36ad46', fontWeight: 600, flex: 'none' }}>Visto</span>
-                                    : <button style={{ background: '#16708f', color: '#fff', border: 'none', borderRadius: 7, padding: '5px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', flex: 'none' }}>
+                                    ? <button onClick={() => setVideoTitle(cls.title)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11, color: '#36ad46', fontWeight: 600, flex: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <i className="fa-solid fa-play" style={{ fontSize: 9 }} /> Visto
+                                      </button>
+                                    : <button onClick={() => setVideoTitle(cls.title)} style={{ background: '#16708f', color: '#fff', border: 'none', borderRadius: 7, padding: '5px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', flex: 'none' }}>
                                       {cls.type === 'live' ? 'Unirse' : cls.type === 'examen' ? 'Rendir' : 'Ver'}
                                     </button>
                                   }
@@ -605,6 +611,7 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
       </div>
 
       <ResourceModals activeResource={activeResource} onClose={() => setActiveResource(null)} />
+      <VideoModal open={videoTitle !== null} onClose={() => setVideoTitle(null)} title={videoTitle ?? ''} />
     </div>
   )
 }
