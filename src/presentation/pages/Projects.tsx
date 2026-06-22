@@ -147,6 +147,9 @@ export function Projects() {
                               </div>
                               <div style={{ textAlign: 'right' }}><span style={{ fontSize: 10, fontWeight: 700, color: dColor, background: dBg, padding: '2px 7px', borderRadius: 10 }}>{doc.status}</span></div>
                             </div>
+                            <button onClick={e => { e.stopPropagation() }} style={{ flex: 'none', background: '#f4f7f8', border: '1px solid #e3e8eb', borderRadius: 7, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Descargar PDF">
+                              <i className="fa-solid fa-download" style={{ color: '#16708f', fontSize: 12 }} />
+                            </button>
                             <i className="fa-solid fa-arrow-right" style={{ color: '#d7dee2', fontSize: 12, flex: 'none' }} />
                           </div>
                         )

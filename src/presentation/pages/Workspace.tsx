@@ -1,13 +1,17 @@
+import { useState } from 'react'
 import { useAppState, useAppDispatch } from '@/app/AppContext'
 import { SECTIONS } from '@/core/data/sections'
 import { ProgressBar } from '../components/ProgressBar'
 import { Reveal } from '../components/Reveal'
 import { MentorBot } from '../components/MentorBot'
 import { FieldHelper } from '../components/FieldHelper'
+import { PdfViewerModal } from '../components/PdfViewerModal'
+import { generateFichaPreviewUrl } from '@/infrastructure/pdf/fichaPreview'
 
 export function Workspace() {
   const { step, doneSteps } = useAppState()
   const dispatch = useAppDispatch()
+  const [showPreview, setShowPreview] = useState(false)
 
   const totalSteps = SECTIONS.length
   const doneCount = doneSteps.length
@@ -28,9 +32,18 @@ export function Workspace() {
               Ficha Técnica IOARR · CUI 2654891
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div className="heading-font" style={{ fontWeight: 800, fontSize: 22, color: '#16708f', lineHeight: 1 }}>{progressPct}%</div>
-            <div style={{ fontSize: 11.5, color: '#8a979e' }}>{doneCount} de {totalSteps} secciones</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => setShowPreview(true)} style={{
+              background: '#fff', border: '1px solid #e3e8eb', borderRadius: 9,
+              padding: '8px 14px', fontSize: 12.5, fontWeight: 600, color: '#16708f',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
+            }}>
+              <i className="fa-solid fa-file-pdf" style={{ color: '#c0392b', fontSize: 13 }} /> Previsualizar PDF
+            </button>
+            <div style={{ textAlign: 'right' }}>
+              <div className="heading-font" style={{ fontWeight: 800, fontSize: 22, color: '#16708f', lineHeight: 1 }}>{progressPct}%</div>
+              <div style={{ fontSize: 11.5, color: '#8a979e' }}>{doneCount} de {totalSteps} secciones</div>
+            </div>
           </div>
         </div>
         <ProgressBar percent={progressPct} height={9} />
@@ -227,6 +240,15 @@ export function Workspace() {
           </div>
         </Reveal>
       </div>
+
+      <PdfViewerModal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Previsualización — Ficha Técnica IOARR"
+        subtitle={`CUI 2654891 · ${doneCount} de ${totalSteps} secciones completadas`}
+        pdfUrl={showPreview ? generateFichaPreviewUrl(step) : ''}
+        downloadName="Ficha_IOARR_CUI_2654891_borrador.pdf"
+      />
     </div>
   )
 }
