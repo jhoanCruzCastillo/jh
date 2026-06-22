@@ -128,6 +128,8 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
   const [openModuleId, setOpenModuleId] = useState<string | null>(null)
   const [sessionIdx, setSessionIdx] = useState(0)
   const [activeResource, setActiveResource] = useState<string | null>(null)
+  const [expandedModule, setExpandedModule] = useState<CourseModule | null>(null)
+  const [expandedSessionIdx, setExpandedSessionIdx] = useState(0)
   const bio = INSTRUCTOR_BIOS[course.instructor]
 
   const totalClasses = course.modules.flatMap(m => m.sessions.flatMap(s => s.classes)).length
@@ -137,6 +139,195 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
     const all = mod.sessions.flatMap(s => s.classes)
     if (all.length === 0) return 0
     return Math.round(all.filter(c => c.completed).length / all.length * 100)
+  }
+
+  if (expandedModule) {
+    const modIdx = course.modules.findIndex(m => m.id === expandedModule.id)
+    const modPct = getModuleProgress(expandedModule)
+    const modDone = expandedModule.sessions.flatMap(s => s.classes.filter(c => c.completed)).length
+    const modTotal = expandedModule.sessions.flatMap(s => s.classes).length
+    const session = expandedModule.sessions[expandedSessionIdx] ?? expandedModule.sessions[0]
+
+    return (
+      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+        <Reveal>
+          <button onClick={() => setExpandedModule(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#16708f', marginBottom: 16, padding: 0 }}>
+            <i className="fa-solid fa-arrow-left" style={{ fontSize: 11 }} /> Volver al curso
+          </button>
+        </Reveal>
+
+        {/* Module header */}
+        <Reveal style={{
+          background: 'linear-gradient(120deg, #0f5d78, #16708f)', borderRadius: 14,
+          padding: '24px 28px', color: '#fff', marginBottom: 22,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, color: '#bfe6d4', fontWeight: 700, letterSpacing: '.5px', marginBottom: 6 }}>MÓDULO {String(modIdx + 1).padStart(2, '0')}</div>
+              <div className="heading-font" style={{ fontWeight: 800, fontSize: 20, lineHeight: 1.25, marginBottom: 8 }}>{expandedModule.title}</div>
+              <div style={{ display: 'flex', gap: 16, fontSize: 12.5, color: '#bfe6d4' }}>
+                <span><i className="fa-solid fa-bookmark" style={{ marginRight: 5 }} />{expandedModule.sessions.length} sesiones</span>
+                <span><i className="fa-solid fa-play-circle" style={{ marginRight: 5 }} />{modDone}/{modTotal} clases</span>
+              </div>
+            </div>
+            <div style={{ flex: 'none', textAlign: 'center' }}>
+              <div className="heading-font" style={{ fontWeight: 800, fontSize: 28, lineHeight: 1 }}>{modPct}%</div>
+              <div style={{ width: 80, marginTop: 6 }}><ProgressBar percent={modPct} height={6} gradient={modPct === 100 ? '#7fe0a0' : 'linear-gradient(90deg,#7fe0a0,#36ad46)'} /></div>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Session tabs */}
+        <Reveal delay={0.05} style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 6, background: '#fff', border: '1px solid #e3e8eb', padding: 5, borderRadius: 11, width: 'fit-content' }}>
+            {expandedModule.sessions.map((s, si) => (
+              <button key={s.id} onClick={() => setExpandedSessionIdx(si)} style={{
+                border: 'none', cursor: 'pointer', borderRadius: 8,
+                padding: '9px 18px', fontSize: 13, fontWeight: 600,
+                background: expandedSessionIdx === si ? '#16708f' : 'transparent',
+                color: expandedSessionIdx === si ? '#fff' : '#6c7b83',
+                transition: 'all .15s',
+              }}>
+                Sesión {si + 1}: {s.title.length > 30 ? s.title.slice(0, 30) + '…' : s.title}
+              </button>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* Session content */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
+          <div>
+            {/* Session info */}
+            <Reveal delay={0.08} style={{ background: '#fff', border: '1px solid #e3e8eb', borderRadius: 14, padding: '20px 24px', marginBottom: 18, boxShadow: '0 1px 3px rgba(0,0,0,.04)' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#1f2d33', marginBottom: 4 }}>{session.title}</div>
+              <div style={{ fontSize: 13, color: '#6c7b83' }}>
+                <i className="fa-solid fa-user" style={{ marginRight: 6, color: '#16708f' }} />Docente: {session.docente}
+              </div>
+            </Reveal>
+
+            {/* Classes */}
+            <Reveal delay={0.1}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#9aa7ad', letterSpacing: '.4px', marginBottom: 10 }}>
+                <i className="fa-solid fa-play-circle" style={{ marginRight: 6, color: '#16708f' }} />CLASES ({session.classes.length})
+              </div>
+            </Reveal>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12, marginBottom: 24 }}>
+              {session.classes.map((cls, ci) => {
+                const [icon, color] = TYPE_ICONS[cls.type] ?? ['fa-circle', '#999']
+                return (
+                  <Reveal key={ci} delay={0.1 + ci * 0.04}>
+                    <div style={{
+                      background: cls.completed ? '#f8fcf9' : '#fff',
+                      border: `1px solid ${cls.completed ? '#d4edda' : '#e3e8eb'}`,
+                      borderRadius: 12, padding: '18px 20px', cursor: 'pointer', transition: 'all .15s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,.06)' }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <i className={`fa-solid ${icon}`} style={{ color, fontSize: 16 }} />
+                          <span style={{ fontSize: 12, fontWeight: 600, color, textTransform: 'capitalize' }}>{cls.type === 'live' ? 'Clase en vivo' : cls.type}</span>
+                        </div>
+                        {cls.completed && <i className="fa-solid fa-circle-check" style={{ color: '#36ad46', fontSize: 16 }} />}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2d33', lineHeight: 1.3, marginBottom: 12 }}>{cls.title}</div>
+                      <button style={{
+                        width: '100%', background: cls.completed ? '#e6f5e9' : '#16708f',
+                        color: cls.completed ? '#2e9a3d' : '#fff',
+                        border: 'none', borderRadius: 9, padding: '9px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                      }}>
+                        {cls.completed ? 'Revisar' : cls.type === 'live' ? 'Unirse a la clase' : cls.type === 'examen' ? 'Rendir examen' : 'Ver contenido'}
+                      </button>
+                    </div>
+                  </Reveal>
+                )
+              })}
+            </div>
+
+            {/* Readings */}
+            {session.readings.length > 0 && (
+              <>
+                <Reveal delay={0.15}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#9aa7ad', letterSpacing: '.4px', marginBottom: 10 }}>
+                    <i className="fa-solid fa-book-open" style={{ marginRight: 6, color: '#e0922f' }} />LECTURAS OBLIGATORIAS ({session.readings.length})
+                  </div>
+                </Reveal>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {session.readings.map((r, ri) => {
+                    const [fileBg, fileColor] = FILE_COLORS[r.file] ?? ['#eef1f3', '#6c7b83']
+                    return (
+                      <Reveal key={ri} delay={0.15 + ri * 0.03}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: '#fff', border: '1px solid #e3e8eb', borderRadius: 11 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 10, background: fileBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', fontSize: 11, fontWeight: 800, color: fileColor }}>
+                            {r.file}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2d33' }}>{r.title}</div>
+                            <div style={{ fontSize: 12, color: '#9aa7ad', marginTop: 2 }}>Documento {r.file}</div>
+                          </div>
+                          <button style={{ background: '#36ad46', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 18px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+                            <i className="fa-solid fa-download" style={{ marginRight: 6 }} />Descargar
+                          </button>
+                        </div>
+                      </Reveal>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Sidebar: module navigation */}
+          <div style={{ position: 'sticky', top: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Reveal delay={0.1} style={{ background: '#fff', border: '1px solid #e3e8eb', borderRadius: 14, padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,.04)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#16708f', letterSpacing: '.3px', marginBottom: 10 }}>
+                <i className="fa-solid fa-list" style={{ marginRight: 6 }} />SESIONES
+              </div>
+              {expandedModule.sessions.map((s, si) => {
+                const sDone = s.classes.filter(c => c.completed).length
+                const sTotal = s.classes.length
+                const active = si === expandedSessionIdx
+                return (
+                  <button key={s.id} onClick={() => setExpandedSessionIdx(si)} style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                    background: active ? '#f0f9ff' : 'transparent', border: `1px solid ${active ? '#16708f' : 'transparent'}`,
+                    borderRadius: 9, cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all .15s',
+                  }}>
+                    <div style={{
+                      width: 26, height: 26, borderRadius: 7, flex: 'none', fontSize: 11, fontWeight: 700,
+                      background: sDone === sTotal ? '#e6f5e9' : active ? '#e3f1f5' : '#f4f7f8',
+                      color: sDone === sTotal ? '#2e9a3d' : active ? '#16708f' : '#9aa7ad',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {sDone === sTotal ? <i className="fa-solid fa-check" style={{ fontSize: 10 }} /> : si + 1}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: active ? '#16708f' : '#46555c', lineHeight: 1.2 }}>{s.title}</div>
+                      <div style={{ fontSize: 10.5, color: '#9aa7ad', marginTop: 1 }}>{sDone}/{sTotal} clases</div>
+                    </div>
+                  </button>
+                )
+              })}
+            </Reveal>
+
+            {bio && (
+              <Reveal delay={0.15} style={{ background: '#fff', border: '1px solid #e3e8eb', borderRadius: 14, padding: '14px', boxShadow: '0 1px 3px rgba(0,0,0,.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <img src={bio.photo} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1f2d33' }}>{session.docente}</div>
+                    <div style={{ fontSize: 11, color: '#16708f' }}>Docente</div>
+                  </div>
+                </div>
+              </Reveal>
+            )}
+          </div>
+        </div>
+
+        <ResourceModals activeResource={activeResource} onClose={() => setActiveResource(null)} />
+      </div>
+    )
   }
 
   const toggleModule = (id: string) => {
@@ -247,7 +438,10 @@ function CourseDetail({ course, onBack }: { course: CourseDef; onBack: () => voi
                         }
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2d33', lineHeight: 1.25 }}>{mod.title}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2d33', lineHeight: 1.25 }}>
+                          <span style={{ fontWeight: 800, color: '#16708f', marginRight: 6 }}>Módulo {String(i + 1).padStart(2, '0')}</span>
+                          {mod.title}
+                        </div>
                         <div style={{ display: 'flex', gap: 12, fontSize: 11.5, color: '#9aa7ad', marginTop: 4 }}>
                           <span>{mod.sessions.length} sesiones</span>
                           <span>{doneCount}/{classCount} clases</span>

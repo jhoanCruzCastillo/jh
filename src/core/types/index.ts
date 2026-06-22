@@ -1,4 +1,4 @@
-export type ViewKey = 'inicio' | 'proyectos' | 'workspace' | 'asistente' | 'cursos' | 'formatos' | 'planes'
+export type ViewKey = 'inicio' | 'proyectos' | 'workspace' | 'asistente' | 'cursos' | 'entrenamiento' | 'formatos' | 'planes'
 
 export type PerfilKey = 'estudiante' | 'consultor' | 'organizacion'
 
